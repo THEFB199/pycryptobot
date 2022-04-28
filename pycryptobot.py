@@ -222,6 +222,10 @@ def execute_job(
                     simDate = _app.getDateFromISO8601Str(str(simDate))
                     sim_rounded = pd.Series(simDate).dt.round("5min")
                     simDate = sim_rounded[0]
+                elif _app.getGranularity() == Granularity.SIX_HOURS:
+                    simDate = _app.getDateFromISO8601Str(str(simDate))
+                    sim_rounded = pd.Series(simDate).dt.round("360min")
+                    simDate = sim_rounded[0]
 
                 dateFound = False
                 while dateFound == False:
@@ -268,10 +272,34 @@ def execute_job(
         if _app.isSimulation() and _app.appStarted:
             # On first run set the iteration to the start date entered
             # This sim mode now pulls 300 candles from before the entered start date
+            
+            if _app.getGranularity() == Granularity.SIX_HOURS:
+                simDateStart = _app.getDateFromISO8601Str(str(_app.simstartdate))
+                simDateStartRounded = pd.Series(simDateStart).dt.round("360min")
+                simDateStartRoundedFormatted = simDateStartRounded[0]
+            elif _app.getGranularity() == Granularity.ONE_DAY:
+                simDateStart = _app.getDateFromISO8601Str(str(_app.simstartdate))
+                simDateStartRounded = pd.Series(simDateStart).dt.round("1440min")
+                simDateStartRoundedFormatted = simDateStartRounded[0]
+            elif _app.getGranularity() == Granularity.ONE_HOUR:
+                simDateStart = _app.getDateFromISO8601Str(str(_app.simstartdate))
+                simDateStartRounded = pd.Series(simDateStart).dt.round("60min")
+                simDateStartRoundedFormatted = simDateStartRounded[0]
+            elif _app.getGranularity() == Granularity.FIFTEEN_MINUTES:
+                simDateStart = _app.getDateFromISO8601Str(str(_app.simstartdate))
+                simDateStartRounded = pd.Series(simDateStart).dt.round("15min")
+                simDateStartRoundedFormatted = simDateStartRounded[0]
+            elif _app.getGranularity() == Granularity.FIVE_MINUTES:
+                simDateStart = _app.getDateFromISO8601Str(str(_app.simstartdate))
+                simDateStartRounded = pd.Series(simDateStart).dt.round("5min")
+                simDateStartRoundedFormatted = simDateStartRounded[0]
+
+            
             _state.iterations = (
-                df.index.get_loc(str(_app.getDateFromISO8601Str(_app.simstartdate))) + 1
+                df.index.get_loc(str(simDateStartRoundedFormatted)) + 1
             )
             _app.appStarted = False
+            
 
     if _app.isSimulation():
         df_last = _app.getInterval(df, _state.iterations)
